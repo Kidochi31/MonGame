@@ -6,29 +6,13 @@ using System.Threading.Tasks;
 
 namespace MonGame.ECS
 {
-    public abstract class ComponentBase
+    // This is what to use to reference components inside other components
+    // This is for 1) safety and 2) to ensure components get garbage collected
+    internal struct Component<T>(T component) where T : ComponentBase
     {
-        public Entity Entity { get; }
-
-        public ComponentBase(Entity entity)
-        {
-            Entity = entity;
-            // Register component and add it to ecs
-            Entity.Ecs.RegisterComponent(this);
-            Entity.Ecs.GetEntity(Entity).AddComponent(this);
-            OnCreate();
-        }
-
-        protected virtual void OnCreate() { }
-        protected virtual void OnDestroy() { }
-
-        // Removes this component from its entity and unregisters it from the ecs
-        public void Destroy()
-        {
-            OnDestroy();
-
-            Entity.Ecs.GetEntity(Entity).RemoveComponent(this);
-            Entity.Ecs.UnregisterComponent(this);
-        }
+        public Entity Entity { get; } = component.Entity;
+        public Type Type => typeof(T);
+        public bool Exists() => Entity.HasComponent<T>();
+        public T GetComponent() => Entity.GetComponent<T>();
     }
 }
