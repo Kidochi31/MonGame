@@ -5,10 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MonGame
+namespace MonGame.Drawing
 {
-    public sealed record class TestComponent(Entity Entity) : ComponentBase(Entity)
+    public record class ScreenPosition(Entity Entity) : ComponentBase(Entity)
     {
-
     }
 }

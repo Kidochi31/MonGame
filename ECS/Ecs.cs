@@ -44,8 +44,9 @@ namespace MonGame.ECS
                               where type.GetCustomAttribute<DrawProcessorAttribute>() is not null
                               && type.IsClass && !type.IsAbstract && type.IsSubclassOf(typeof(Processor))
                               select (type, (Processor)Activator.CreateInstance(type))).ToList();
+            
             DrawProcessors = [];
-            Processor.InsertProcessorsIntoList(updateProcessors, DrawProcessors);
+            Processor.InsertProcessorsIntoList(drawProcessors, DrawProcessors);
         }
 
         #region Entities
@@ -139,8 +140,18 @@ namespace MonGame.ECS
 
         public void RemoveProcessorsOfType(Type processorType)
         {
-            UpdateProcessors.RemoveAll(processor => processor.GetType() == processorType);
-            UpdateProcessors.RemoveAll(processor => processor.GetType() == processorType);
+            UpdateProcessors.RemoveAll(processor => processor.Type == processorType);
+            DrawProcessors.RemoveAll(processor => processor.Type == processorType);
+        }
+
+        public void AddUpdateProcessor(Processor processor)
+        {
+            Processor.InsertProcessorsIntoList([(processor.GetType(), processor)], UpdateProcessors);
+        }
+
+        public void AddDrawProcessor(Processor processor)
+        {
+            Processor.InsertProcessorsIntoList([(processor.GetType(), processor)], DrawProcessors);
         }
 
         public Processor? GetProcessor(Type type)
@@ -154,38 +165,40 @@ namespace MonGame.ECS
         public T? GetProcessor<T>() where T : Processor
             => (T?)GetProcessor(typeof(T));
 
+        public void Initialize()
+        {
+            RunProcessors(UpdateProcessors, p => p.Initialize(this, GameManager));
+            RunProcessors(DrawProcessors, p => p.Initialize(this, GameManager));
+        }
+
         public void Update(GameTime gameTime)
         {
-            foreach((Type type, Processor processor) in UpdateProcessors)
-            {
-                try
-                {
-                    if(processor.IsActive)
-                        processor.OnUpdate(gameTime, this);
-                }
-                catch(Exception e)
-                {
-                    Console.WriteLine($"FATAL EXCEPTION on update process {processor}: {e}");
-                    RemoveProcessorsOfType(type);
-                }
-            }
+            RunProcessors(UpdateProcessors, p => p.OnUpdate(gameTime, this, GameManager));
         }
 
         public void DrawUpdate(GameTime gameTime)
         {
-            foreach ((Type type, Processor processor) in DrawProcessors)
+            RunProcessors(DrawProcessors, p => p.OnUpdate(gameTime, this, GameManager));
+        }
+
+        public void RunProcessors(List<(Type type, Processor Processor)> Processors, Action<Processor> action)
+        {
+            List<Type> removeTypes = [];
+            foreach ((Type type, Processor processor) in Processors)
             {
                 try
                 {
-                    if(processor.IsActive)
-                        processor.OnUpdate(gameTime, this);
+                    if (processor.IsActive)
+                        action(processor);
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine($"FATAL EXCEPTION on draw process {processor}: {e}");
-                    RemoveProcessorsOfType(type);
+                    if (processor.StopOnError)
+                        removeTypes.Add(type);
                 }
             }
+            removeTypes.ForEach(RemoveProcessorsOfType);
         }
         #endregion
     }

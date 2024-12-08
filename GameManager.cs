@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonGame.Assets;
 using MonGame.ECS;
 using System;
 
@@ -20,18 +21,15 @@ namespace MonGame
             Ecs = new Ecs(this);
         }
 
-        protected override void Initialize()
-        {
-            // TODO: Add your initialization logic here
-
-            base.Initialize();
-        }
+        // Intialise will automatically call LoadContent -> no need to override it
+        //protected override void Initialize() => base.Initialize();
 
         protected override void LoadContent()
         {
+            AssetManager.Initialise(GraphicsDevice);
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
+            Ecs.Initialize();
         }
 
         protected override void Update(GameTime gameTime)
@@ -39,21 +37,13 @@ namespace MonGame
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            // TODO: Add your update logic here
             Ecs.Update(gameTime);
 
-
-            base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-            // TODO: Add your drawing code here
-
             Ecs.DrawUpdate(gameTime);
-
-            base.Draw(gameTime);
         }
     }
 }

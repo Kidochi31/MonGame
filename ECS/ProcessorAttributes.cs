@@ -9,7 +9,6 @@ namespace MonGame.ECS
     [AttributeUsage(AttributeTargets.Class)]
     public class DrawProcessorAttribute() : Attribute { }
 
-
     [AttributeUsage(AttributeTargets.Class)]
     public class UpdateProcessorAttribute() : Attribute { }
 
@@ -18,4 +17,10 @@ namespace MonGame.ECS
 
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
     public class AfterProcessorAttribute(Type processor) : Attribute { public Type Processor { get; } = processor; }
+
+    [AttributeUsage(AttributeTargets.Class)]
+    public class FirstProcessorAttribute() : Attribute { }
+
+    [AttributeUsage(AttributeTargets.Class)]
+    public class LastProcessorAttribute() : Attribute { }
 }
