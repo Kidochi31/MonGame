@@ -17,11 +17,13 @@ namespace MonGame.ECS
         readonly List<(Type Type, List<ComponentBase> Components)> Components;
         readonly List<(Type Type, Processor Processor)> UpdateProcessors;
         readonly List<(Type Type, Processor Processor)> DrawProcessors;
-        
+        readonly LinkedList<Event> EventQueue;
+                
         public Ecs(GameManager gameManager)
         {
             GameManager = gameManager;
             Entities = [];
+            EventQueue = [];
 
             // components contains a list of lists of components, with all sealed descendants of Component
             Components = (from domainAssembly in AppDomain.CurrentDomain.GetAssemblies()
@@ -74,6 +76,9 @@ namespace MonGame.ECS
                 throw new EntityNotFoundException();
             return Entities[entity.Guid];
         }
+
+        public bool EntityExists(Entity entity) => Entities.ContainsKey(entity.Guid);
+
         #endregion
 
         #region Components
@@ -81,16 +86,15 @@ namespace MonGame.ECS
         #region GetComponents
         public List<ComponentBase> GetComponents(Type type)
         {
-            if (!type.IsAssignableTo(typeof(ComponentBase)))
+            // type must be either a subclass of component or an interface
+            if (!type.IsAssignableTo(typeof(ComponentBase)) && !type.IsInterface)
                 throw new InvalidComponentException(type);
-            List<ComponentBase>? componentList = (from components in Components where components.Type == type select components.Components).FirstOrDefault();
-            if(componentList is null)
-                throw new InvalidComponentException(type);
+            List<ComponentBase> componentList = (from components in Components where components.Type.IsAssignableTo(type) select components.Components).SelectMany(x => x).ToList();
             return componentList;
         }
 
         // Returns list of components T
-        public List<T> GetComponents<T>() where T : ComponentBase
+        public List<T> GetComponents<T>()
             => GetComponents(typeof(T)).Cast<T>().ToList();
 
         // Returns list of components T1 and T2 on the same entity
@@ -167,21 +171,22 @@ namespace MonGame.ECS
 
         public void Initialize()
         {
-            RunProcessors(UpdateProcessors, p => p.Initialize(this, GameManager));
-            RunProcessors(DrawProcessors, p => p.Initialize(this, GameManager));
+            RunProcessors(UpdateProcessors, p => p.Initialize(this, GameManager), "initialising process");
+            RunProcessors(DrawProcessors, p => p.Initialize(this, GameManager), "initialising process");
         }
 
         public void Update(GameTime gameTime)
         {
-            RunProcessors(UpdateProcessors, p => p.OnUpdate(gameTime, this, GameManager));
+            RunProcessors(UpdateProcessors, p => p.OnUpdate(gameTime, this, GameManager), "update process");
+            ExecuteEvents();
         }
 
         public void DrawUpdate(GameTime gameTime)
         {
-            RunProcessors(DrawProcessors, p => p.OnUpdate(gameTime, this, GameManager));
+            RunProcessors(DrawProcessors, p => p.OnUpdate(gameTime, this, GameManager), "draw process");
         }
 
-        public void RunProcessors(List<(Type type, Processor Processor)> Processors, Action<Processor> action)
+        public void RunProcessors(List<(Type type, Processor Processor)> Processors, Action<Processor> action, string info)
         {
             List<Type> removeTypes = [];
             foreach ((Type type, Processor processor) in Processors)
@@ -193,13 +198,84 @@ namespace MonGame.ECS
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"FATAL EXCEPTION on draw process {processor}: {e}");
+                    Console.WriteLine($"FATAL EXCEPTION on {info} {processor}: {e}");
                     if (processor.StopOnError)
                         removeTypes.Add(type);
                 }
             }
             removeTypes.ForEach(RemoveProcessorsOfType);
         }
+
+        public void RunProcessors(List<(Type type, Processor Processor)> Processors, Func<Processor, bool> shouldStop, string info)
+        {
+            List<Type> removeTypes = [];
+            foreach ((Type type, Processor processor) in Processors)
+            {
+                try
+                {
+                    bool stopping = false;
+                    if (processor.IsActive)
+                        stopping = shouldStop(processor);
+
+                    if (stopping)
+                        break;
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"FATAL EXCEPTION on {info} {processor}: {e}");
+                    if (processor.StopOnError)
+                        removeTypes.Add(type);
+                }
+            }
+            removeTypes.ForEach(RemoveProcessorsOfType);
+        }
+        #endregion
+
+        #region Events
+
+        internal void RegisterEvent(Event Event)
+        {
+            if (EventQueue.Any(e => ReferenceEquals(e, Event)))
+                throw new EventAlreadyCreatedException(Event);
+            EventQueue.AddLast(Event);
+        }
+
+        public void DestroyEvent(Event Event)
+        {
+            if (EventQueue.All(e => !ReferenceEquals(e, Event)))
+                throw new EventAlreadyDestroyedException(Event);
+            EventQueue.Remove(Event);
+        }
+
+        public List<T> GetAllEvents<T>() where T : Event
+        {
+            List<T> events = new List<T>();
+            foreach(Event e in EventQueue)
+            {
+                if(e is T t)
+                    events.Add(t);
+            }
+            return events;
+        }
+
+        private void ExecuteEvents()
+        {
+            while(EventQueue.Count > 0)
+            {
+                Event nextEvent = EventQueue.First();
+                Type eventType = nextEvent.GetType();
+                EventQueue.RemoveFirst();
+                // go through all update processors in order, and execute their event managers
+                RunProcessors(UpdateProcessors,
+                    processor => processor.Events.ContainsKey(eventType)
+                    // run the event and stop if it consumes the event
+                    ? processor.Events[eventType].Invoke(nextEvent) == EventAction.Consume
+                    // if it doesn't run the event, don't stuck
+                    : false,
+                    $"event {nextEvent} executed in process");
+            }
+        }
+
         #endregion
     }
 }

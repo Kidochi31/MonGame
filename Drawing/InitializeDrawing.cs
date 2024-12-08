@@ -16,6 +16,8 @@ namespace MonGame.Drawing
     {
         public Texture2DAsset Birb;
 
+        
+
         public override void Initialize(Ecs ecs, GameManager game)
         {
             Birb = Asset.Birb.Load();
@@ -27,6 +29,9 @@ namespace MonGame.Drawing
             gameManager.SpriteBatch.Begin();
 
             gameManager.SpriteBatch.Draw(Birb.Texture2D, new Rectangle(0, 0, 800, 480), Color.White);
+            
         }
     }
+
+    
 }
