@@ -4,6 +4,8 @@ using Microsoft.Xna.Framework.Input;
 using MonGame.Assets;
 using MonGame.ECS;
 using System;
+using System.Reflection;
+using System.Runtime.Serialization;
 
 namespace MonGame
 {
@@ -13,12 +15,14 @@ namespace MonGame
         public SpriteBatch SpriteBatch;
         public Ecs Ecs;
 
+
         public GameManager()
         {
             Graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
             IsMouseVisible = true;
             Ecs = new Ecs(this);
+            Window.AllowUserResizing = true;
         }
 
         // Intialise will automatically call LoadContent -> no need to override it

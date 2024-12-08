@@ -118,7 +118,7 @@ namespace MonGame.ECS
             List<ComponentBase>? componentList = (from components in Components where components.Type == componentType select components.Components).FirstOrDefault();
             if (componentList is null)
                 throw new InvalidComponentException(componentType);
-            if (!componentList.Contains(component))
+            if (componentList.Any(c => ReferenceEquals(component, c)))
                 throw new ComponentAlreadyRegisteredException(component);
 
             componentList.Add(component);
