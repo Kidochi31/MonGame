@@ -17,6 +17,14 @@ namespace MonGame.Input
         Released
     }
 
-    public sealed record class Keybind(ButtonState KeyState, Keys Key, Type? Type, Entity Entity) : ComponentBase(Entity);
-    public sealed record class MouseMovedBind(Type? Type, Entity Entity) : ComponentBase(Entity);
+    public sealed record class Keybind(Entity Entity, ButtonState KeyState, Keys Key, Type? Event) : ComponentBase(Entity)
+    {
+        public ButtonState KeyState { get; set; } = KeyState;
+        public Keys Key { get; set; } = Key;
+        public Type? Event { get; set; } = Event;
+    }
+    public sealed record class MouseMovedBind(Entity Entity, Type? Event) : ComponentBase(Entity)
+    {
+        public Type? Event { get; set; } = Event;
+    }
 }

@@ -15,15 +15,18 @@ namespace MonGame.ECS
         public ComponentBase(Entity entity)
         {
             Entity = entity;
-            // Register component and add it to ecs
-            Entity.Ecs.RegisterComponent(this);
-            Entity.Ecs.GetEntity(Entity).AddComponent(this);
+            // Register component and add it to ecs (and entity)
+            Entity.Ecs.RegisterComponent(this, entity);
+            OnCreate(Entity.Ecs.GameManager);
         }
+
+        protected virtual void OnCreate(GameManager game) { }
+        protected virtual void OnDestroy(GameManager game) { }
 
         // Removes this component from its entity and unregisters it from the ecs
         public void Destroy()
         {
-            Entity.Ecs.GetEntity(Entity).RemoveComponent(this);
+            OnDestroy(Entity.Ecs.GameManager);
             Entity.Ecs.UnregisterComponent(this);
         }
     }

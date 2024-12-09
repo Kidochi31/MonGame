@@ -21,6 +21,21 @@ namespace MonGame.ECS
         }
     }
 
+    public abstract record class DrawEvent
+    {
+        Ecs Ecs { get; }
+        public DrawEvent(Ecs ecs)
+        {
+            Ecs = ecs;
+            Ecs.RegisterDrawEvent(this);
+        }
+
+        public void Destroy()
+        {
+            Ecs.DestroyDrawEvent(this);
+        }
+    }
+
     public enum EventAction
     {
         Consume,

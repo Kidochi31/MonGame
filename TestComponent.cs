@@ -7,8 +7,12 @@ using System.Threading.Tasks;
 
 namespace MonGame
 {
-    public sealed record class TestComponent(Entity Entity) : ComponentBase(Entity)
+    public sealed record class TestComponent(int Value, Entity Entity) : ComponentBase(Entity)
     {
+    }
 
+    [RequiresComponent(typeof(TestComponent))]
+    public sealed record class TestComponent2(Entity Entity) : ComponentBase(Entity)
+    {
     }
 }

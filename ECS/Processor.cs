@@ -15,7 +15,6 @@ namespace MonGame.ECS
         public virtual Type[] ReadComponents { get; } = [];
         public virtual Type[] ReadWriteComponents { get; } = [];
 
-        public virtual Dictionary<Type, Func<Event, EventAction>> Events { get; } = [];
         public Processor() { }
 
         public void Deactivate()
@@ -35,12 +34,11 @@ namespace MonGame.ECS
             }
         }
 
-        public virtual void Initialize(Ecs ecs, GameManager game) { }
-        public virtual void OnActivate() { }
-        public virtual void OnDeactivate() { }
-        public virtual void OnUpdate(GameTime gameTime, Ecs ecs, GameManager game) { }
+        internal virtual void Initialize(Ecs ecs, GameManager game) { }
+        protected virtual void OnActivate() { }
+        protected virtual void OnDeactivate() { }
 
-        public static bool AComesBeforeB(Type a, Type b)
+        internal static bool AComesBeforeB(Type a, Type b)
         {
             // if a is before b or b is after a
             // or a is "first" (and b is not) or b is "last" (and a is not)
@@ -50,9 +48,9 @@ namespace MonGame.ECS
                 || b.GetCustomAttribute<LastProcessorAttribute>() is not null && a.GetCustomAttribute<LastProcessorAttribute>() is not null;
         }
 
-        public static void InsertProcessorsIntoList(IEnumerable<(Type Type, Processor Processor)> values, List<(Type Type, Processor Processor)> list)
+        internal static void InsertProcessorsIntoList<T>(IEnumerable<(Type Type, T Processor)> values, List<(Type Type, T Processor)> list) where T: Processor
         {
-            foreach ((Type type, Processor processor) in values)
+            foreach ((Type type, T processor) in values)
             {
                 // find where to insert in list
                 int i;

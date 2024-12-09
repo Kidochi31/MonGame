@@ -10,8 +10,7 @@ using System.Threading.Tasks;
 
 namespace MonGame
 {
-    [UpdateProcessor]
-    internal class TestProcessor() : Processor()
+    internal class TestProcessor() : UpdateProcessor()
     {
         public override bool IsActive { get; protected set; } = true;
 
@@ -28,7 +27,7 @@ namespace MonGame
                 return EventAction.Continue;
             } }};
 
-        public override void OnUpdate(GameTime gameTime, Ecs ecs, GameManager gameManager)
+        public override void Update(GameTime gameTime, Ecs ecs, GameManager gameManager)
         {
             //new TestEvent(1, ecs);
             //new TestEvent(1, ecs);

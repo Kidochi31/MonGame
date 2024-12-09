@@ -10,9 +10,8 @@ using System.Threading.Tasks;
 
 namespace MonGame.Input
 {
-    [UpdateProcessor]
     [FirstProcessor]
-    public class Input : Processor
+    public class Input : UpdateProcessor
     {
         KeyboardState OldKeyboardState;
         MouseState OldMouseState;
@@ -26,7 +25,7 @@ namespace MonGame.Input
 
         Dictionary<Type, Func<Ecs, InputEvent>> CachedEventConstructors = [];
 
-        public override void Initialize(Ecs ecs, GameManager game)
+        internal override void Initialize(Ecs ecs, GameManager game)
         {
             OldKeyboardState = Keyboard.GetState();
             OldMouseState = Mouse.GetState();
@@ -34,24 +33,24 @@ namespace MonGame.Input
             {
                 // create a keybind component on a new entity
                 Entity keyEntity = ecs.CreateEntity();
-                new Keybind(State, Key, Event, keyEntity);
+                new Keybind(keyEntity, State, Key, Event);
             }
             foreach (Type? Event in InitialMousePositions)
             {
                 // create a mouse position component on a new entity
                 Entity keyEntity = ecs.CreateEntity();
-                new MouseMovedBind(Event, keyEntity);
+                new MouseMovedBind(keyEntity, Event);
             }
         }
 
-        public override void OnUpdate(GameTime gameTime, Ecs ecs, GameManager game)
+        public override void Update(GameTime gameTime, Ecs ecs, GameManager game)
         {
             KeyboardState newKeyboardState = Keyboard.GetState();
             MouseState newMouseState = Mouse.GetState();
             // go through all Keybind components
             foreach (Keybind keybind in ecs.GetComponents<Keybind>())
             {
-                Type? type = keybind.Type;
+                Type? type = keybind.Event;
                 if (type is null || !ShouldInvokeKeyEvent(keybind, newKeyboardState))
                     continue;
                 InvokeInputEvent(type, ecs);
@@ -61,7 +60,7 @@ namespace MonGame.Input
             // go through all mouse position bind components
             foreach (MouseMovedBind mouseMovedBind in ecs.GetComponents<MouseMovedBind>())
             {
-                Type? type = mouseMovedBind.Type;
+                Type? type = mouseMovedBind.Event;
                 if (type is null || !mouseMoved)
                     continue;
 

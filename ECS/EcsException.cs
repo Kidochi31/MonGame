@@ -15,4 +15,10 @@ namespace MonGame.ECS
     public class ComponentAlreadyRegisteredException(ComponentBase component) : EcsException($"Component {component} has already been registered!") { }
     public class EntityHasComponentException(ComponentBase component) : EcsException($"Component of type {component.GetType()} has already been added to this entity!") { }
     public class EntityDoesNotHaveComponentException(ComponentBase component) : EcsException($"This entity does not have {component}!") { }
+    public class ComponentRequirementNotMetException(Type requirement) : EcsException($"This entity does not have a required component of type {requirement}!") { }
+
+    public class EventAlreadyCreatedException(Event Event) : EcsException($"Event {Event} was already created.") { }
+    public class EventAlreadyDestroyedException(Event Event) : EcsException($"Event {Event} was already destroyed.") { }
+    public class DrawEventAlreadyCreatedException(DrawEvent Event) : EcsException($"Draw event {Event} was already created.") { }
+    public class DrawEventAlreadyDestroyedException(DrawEvent Event) : EcsException($"Draw event {Event} was already destroyed.") { }
 }
