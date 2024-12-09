@@ -25,25 +25,37 @@ namespace MonGame.Input
         {
             MouseState newMouseState = Mouse.GetState();
 
+            Rectangle realFrame = UIRealPosition.GetInitialRealFrame(game);
             // go through all Gui components, then recursively find the frames/textures with
-            
+            foreach(Gui gui in ecs.GetComponents<Gui>())
+            {
+                Point virtualSize = new(gui.VirtualWidth, gui.VirtualHeight);
+                UITransform transform = gui.Entity.GetComponent<UITransform>();
+                foreach (Frame frame in GetFramesWithMouseOver(transform, realFrame, virtualSize, newMouseState.Position))
+                {
+                    
+                    if (frame.Entity.HasComponent<UIMouseBind>())
+                    {
+                        UIMouseBind bind = frame.Entity.GetComponent<UIMouseBind>();
+                        foreach((UIMouseEvent mouseEvent, InputEvent? Event) in bind.Events)
+                        {
+                            if(IsCurrentMouseEvent(mouseEvent, newMouseState) && Event is not null)
+                            {
+                                Event.InvokeEvent(ecs);
+                            }
+                        }
+                    }
+                }
+            }
 
 
             OldMouseState = newMouseState;
         }
 
-        private bool ShouldInvokeUIMouseBindEvent(UIMouseBind uiBind, MouseState newState)
-        {
-            //if (!IsCurrentMouseEvent(uiBind, newState))
-            //    return false;
-
-            // Check the position
-            return false;
-        }
-
         private IEnumerable<Frame> GetFramesWithMouseOver(UITransform transform, Rectangle realFrame, Point virtualSize, Point realMousePosition)
         {
             // find all children, check if their real frames contain the realMousePosition
+            
             foreach (Component<UITransform> child in transform.Children)
             {
                 UITransform childTransform = child.GetComponent();
@@ -52,6 +64,7 @@ namespace MonGame.Input
                 Frame childFrame = childTransform.Entity.GetComponent<Frame>();
                 Rectangle childVirtualFrame = new Rectangle(childTransform.Position, new Point(childFrame.ActualWidth, childFrame.ActualHeight));
                 Rectangle childRealFrame = UIRealPosition.VirtualFrameToRealFrame(realFrame, virtualSize, childVirtualFrame);
+                //Console.WriteLine($"{child.Entity.Name}:\n Virtual:{childVirtualFrame}\n Real: {childRealFrame}");
                 if (!childRealFrame.Contains(realMousePosition))
                     continue;
 
