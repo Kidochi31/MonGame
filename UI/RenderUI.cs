@@ -53,7 +53,7 @@ namespace MonGame.UI
                 // draw all of the children to the frame
                 RenderTarget2D renderTarget = frame.RenderTarget;
                 game.GraphicsDevice.SetRenderTarget(renderTarget);
-                game.GraphicsDevice.Clear(Color.Red);
+                game.GraphicsDevice.Clear(Color.Transparent);
 
                 RenderDrawLayers(layers, game.SpriteBatch);
 
@@ -73,7 +73,7 @@ namespace MonGame.UI
                 // draw all of the children to the frame
                 RenderTarget2D renderTarget = gui.RenderTarget;
                 game.GraphicsDevice.SetRenderTarget(renderTarget);
-                game.GraphicsDevice.Clear(Color.Blue);
+                game.GraphicsDevice.Clear(Color.Transparent);
 
                 RenderDrawLayers(layers, game.SpriteBatch);
 

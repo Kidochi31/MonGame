@@ -19,14 +19,12 @@ namespace MonGame.ECS
         readonly List<(Type Type, UpdateProcessor Processor)> UpdateProcessors;
         readonly List<(Type Type, DrawProcessor Processor)> DrawProcessors;
         readonly LinkedList<Event> EventQueue;
-        readonly List<DrawEvent> DrawEvents;
                 
         public Ecs(GameManager gameManager)
         {
             GameManager = gameManager;
             Entities = [];
             EventQueue = [];
-            DrawEvents = [];
 
             // components contains a list of lists of components, with all sealed descendants of Component
             Components = (from domainAssembly in AppDomain.CurrentDomain.GetAssemblies()
@@ -204,8 +202,6 @@ namespace MonGame.ECS
             spriteBatch.Begin();
             drawLayers.ForEach(layer => layer.Draw(spriteBatch));
             spriteBatch.End();
-
-            DestroyAllDrawEvents();
         }
 
         public void RunProcessors<T>(List<(Type type, T Processor)> Processors, Action<T> action, string info) where T : Processor
@@ -286,8 +282,15 @@ namespace MonGame.ECS
             {
                 Event nextEvent = EventQueue.First();
                 Type eventType = nextEvent.GetType();
-                // go through all update processors in order, and execute their event managers
+                // go through all update, then draw processors in order, and execute their event managers
                 RunProcessors(UpdateProcessors,
+                    processor => processor.Events.ContainsKey(eventType)
+                    // run the event and stop if it consumes the event
+                    ? processor.Events[eventType].Invoke(nextEvent) == EventAction.Consume
+                    // if it doesn't run the event, don't stuck
+                    : false,
+                    $"event {nextEvent} executed in process");
+                RunProcessors(DrawProcessors,
                     processor => processor.Events.ContainsKey(eventType)
                     // run the event and stop if it consumes the event
                     ? processor.Events[eventType].Invoke(nextEvent) == EventAction.Consume
@@ -296,30 +299,6 @@ namespace MonGame.ECS
                     $"event {nextEvent} executed in process");
             }
         }
-
-        internal void RegisterDrawEvent(DrawEvent Event)
-        {
-            if (DrawEvents.Any(e => ReferenceEquals(e, Event)))
-                throw new DrawEventAlreadyCreatedException(Event);
-            DrawEvents.Add(Event);
-        }
-
-        public void DestroyDrawEvent(DrawEvent Event)
-        {
-            if (DrawEvents.All(e => !ReferenceEquals(e, Event)))
-                throw new DrawEventAlreadyDestroyedException(Event);
-            DrawEvents.Remove(Event);
-        }
-
-        private void DestroyAllDrawEvents()
-        {
-            DrawEvents.Clear();
-        }
-
-        public List<T> GetAllDrawEvents<T>() where T : DrawEvent
-            => (from drawEvent in DrawEvents
-                    where drawEvent is T
-                    select (T)drawEvent).ToList();
 
         #endregion
     }

@@ -11,6 +11,6 @@ namespace MonGame.ECS
     {
         public virtual void Update(GameTime gameTime, Ecs ecs, GameManager game) { }
 
-        public virtual Dictionary<Type, Func<Event, EventAction>> Events { get; } = [];
+        
     }
 }

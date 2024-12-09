@@ -14,7 +14,7 @@ namespace MonGame.ECS
         public virtual bool StopOnError => false;
         public virtual Type[] ReadComponents { get; } = [];
         public virtual Type[] ReadWriteComponents { get; } = [];
-
+        public virtual Dictionary<Type, Func<Event, EventAction>> Events { get; } = [];
         public Processor() { }
 
         public void Deactivate()

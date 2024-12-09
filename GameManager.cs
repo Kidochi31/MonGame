@@ -50,7 +50,7 @@ namespace MonGame
 
             Entity image = Ecs.CreateEntity("image");
             new UITransform(image, new(0, 0), 0, frame.GetComponent<UITransform>());
-            new UI.Texture(image, Birb, 500, 1000);
+            new UI.Texture(image, Birb, 1000, 2000);
         }
 
         protected override void Update(GameTime gameTime)

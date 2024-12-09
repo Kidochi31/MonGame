@@ -19,6 +19,4 @@ namespace MonGame.ECS
 
     public class EventAlreadyCreatedException(Event Event) : EcsException($"Event {Event} was already created.") { }
     public class EventAlreadyDestroyedException(Event Event) : EcsException($"Event {Event} was already destroyed.") { }
-    public class DrawEventAlreadyCreatedException(DrawEvent Event) : EcsException($"Draw event {Event} was already created.") { }
-    public class DrawEventAlreadyDestroyedException(DrawEvent Event) : EcsException($"Draw event {Event} was already destroyed.") { }
 }
