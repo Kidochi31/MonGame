@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -13,6 +14,9 @@ namespace MonGame.ECS
         public Guid Guid = guid;
         public string Name = name;
         public List<ComponentBase>? Components = [];
+
+        private bool BeingDestroyed = false;
+        
         void AssertComponentRequirements(ComponentBase component)
         {
             if (Components is null)
@@ -53,13 +57,14 @@ namespace MonGame.ECS
             Components.Remove(component);
 
             // also check that all other components don't have this as a requirement
-            // if they do, add it back (and throw an exception
+            // if they do, add it back (and throw an exception)
+            // skip this if the entity is being destroyed
+            if (BeingDestroyed)
+                return;
             try
             {
                 foreach (ComponentBase c in Components)
-                {
                     AssertComponentRequirements(c);
-                }
             }
             catch(Exception e)
             {
@@ -72,9 +77,10 @@ namespace MonGame.ECS
         {
             if (Components is null)
                 throw new EntityNotFoundException();
+            BeingDestroyed = true;
 
             // Destroy all components
-            foreach (ComponentBase component in Components)
+            foreach(ComponentBase component in Components.ToList())
                 component.Destroy();
 
             // Remove component references

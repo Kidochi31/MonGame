@@ -12,6 +12,7 @@ namespace MonGame.ECS
     {
         public virtual bool IsActive { get; protected set; } = true;
         public virtual bool StopOnError => false;
+        public virtual bool ThrowOnError => false;
         public virtual Type[] ReadComponents { get; } = [];
         public virtual Type[] ReadWriteComponents { get; } = [];
         public virtual Dictionary<Type, Func<Event, EventAction>> Events { get; } = [];

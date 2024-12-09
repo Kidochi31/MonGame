@@ -199,7 +199,7 @@ namespace MonGame.ECS
             device.Clear(Color.CornflowerBlue);
 
             SpriteBatch spriteBatch = GameManager.SpriteBatch;
-            spriteBatch.Begin();
+            spriteBatch.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointWrap);
             drawLayers.ForEach(layer => layer.Draw(spriteBatch));
             spriteBatch.End();
         }
@@ -217,6 +217,8 @@ namespace MonGame.ECS
                 catch (Exception e)
                 {
                     Console.WriteLine($"FATAL EXCEPTION on {info} {processor}: {e}");
+                    if (processor.ThrowOnError)
+                        throw;
                     if (processor.StopOnError)
                         removeTypes.Add(type);
                 }
@@ -241,6 +243,8 @@ namespace MonGame.ECS
                 catch (Exception e)
                 {
                     Console.WriteLine($"FATAL EXCEPTION on {info} {processor}: {e}");
+                    if (processor.ThrowOnError)
+                        throw;
                     if (processor.StopOnError)
                         removeTypes.Add(type);
                 }
@@ -281,6 +285,7 @@ namespace MonGame.ECS
             while (EventQueue.Count > 0)
             {
                 Event nextEvent = EventQueue.First();
+                EventQueue.RemoveFirst();
                 Type eventType = nextEvent.GetType();
                 // go through all update, then draw processors in order, and execute their event managers
                 RunProcessors(UpdateProcessors,
@@ -289,14 +294,14 @@ namespace MonGame.ECS
                     ? processor.Events[eventType].Invoke(nextEvent) == EventAction.Consume
                     // if it doesn't run the event, don't stuck
                     : false,
-                    $"event {nextEvent} executed in process");
+                    $"event {nextEvent} executed in update process");
                 RunProcessors(DrawProcessors,
                     processor => processor.Events.ContainsKey(eventType)
                     // run the event and stop if it consumes the event
                     ? processor.Events[eventType].Invoke(nextEvent) == EventAction.Consume
                     // if it doesn't run the event, don't stuck
                     : false,
-                    $"event {nextEvent} executed in process");
+                    $"event {nextEvent} executed in draw process");
             }
         }
 

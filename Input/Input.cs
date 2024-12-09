@@ -23,7 +23,7 @@ namespace MonGame.Input
             //typeof(PrintEvent)
         };
 
-        Dictionary<Type, Func<Ecs, InputEvent>> CachedEventConstructors = [];
+        EventConstructorCache<Func<Ecs, InputEvent>> CachedEventConstructors = new();
 
         internal override void Initialize(Ecs ecs, GameManager game)
         {
@@ -66,25 +66,14 @@ namespace MonGame.Input
 
                 InvokeInputEvent(type, ecs);
             }
+
             OldMouseState = newMouseState;
             OldKeyboardState = newKeyboardState;
         }
 
         private void InvokeInputEvent(Type type, Ecs ecs)
         {
-            if (CachedEventConstructors.ContainsKey(type))
-            {
-                CachedEventConstructors[type](ecs);
-            }
-            else
-            {
-                var ctor = type.GetConstructor([typeof(Ecs)]);
-                var param = Expression.Parameter(typeof(Ecs), "ecs");
-                // from Ecs to type
-                Func<Ecs, InputEvent> constructor = (Func<Ecs, InputEvent>)Expression.Lambda(typeof(Func<,>).MakeGenericType([typeof(Ecs), type]), Expression.New(ctor, param), param).Compile();
-                CachedEventConstructors.Add(type, constructor);
-                constructor(ecs);
-            }
+            CachedEventConstructors[type](ecs);
         }
 
         private bool ShouldInvokeKeyEvent(Keybind keybind, KeyboardState newState)
