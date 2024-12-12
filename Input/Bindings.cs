@@ -19,15 +19,15 @@ namespace MonGame.Input
         Released
     }
 
-    public sealed record class Keybind(Entity Entity, ButtonState KeyState, Keys Key, InputEvent? Event) : ComponentBase(Entity)
+    public sealed record class Keybind(Entity Entity, ButtonState KeyState, Keys Key, Type? Event) : ComponentBase(Entity)
     {
         public ButtonState KeyState { get; set; } = KeyState;
         public Keys Key { get; set; } = Key;
-        public InputEvent Event { get; set; } = Event;
+        public Type? Event { get; set; } = Event;
     }
-    public sealed record class MouseMovedBind(Entity Entity, InputEvent? Event) : ComponentBase(Entity)
+    public sealed record class MouseMovedBind(Entity Entity, Type? Event) : ComponentBase(Entity)
     {
-        public InputEvent? Event { get; set; } = Event;
+        public Type? Event { get; set; } = Event;
     }
 
     public enum UIMouseEvent
@@ -41,9 +41,9 @@ namespace MonGame.Input
 
     [RequiresComponent(typeof(UITransform))]
     [RequiresComponent(typeof(Frame))]
-    public sealed record class UIMouseBind(Entity Entity, List<(UIMouseEvent MouseEvent, InputEvent? Event)> Events) : ComponentBase(Entity)
+    public sealed record class UIMouseBind(Entity Entity, List<(UIMouseEvent MouseEvent, Type? Event)> Events) : ComponentBase(Entity)
     {
-        public List<(UIMouseEvent MouseEvent, InputEvent? Event)> Events { get; } = Events;
+        public List<(UIMouseEvent MouseEvent, Type? Event)> Events { get; } = Events;
     }
 
 

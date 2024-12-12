@@ -4,7 +4,6 @@ using Microsoft.Xna.Framework.Input;
 using MonGame.Assets;
 using MonGame.Drawing;
 using MonGame.ECS;
-using MonGame.Input;
 using MonGame.UI;
 using System;
 using System.Reflection;
@@ -54,12 +53,12 @@ namespace MonGame
             new UITransform(image, new(0, 0), 0.5f, frame.GetComponent<UITransform>());
             new Frame(image, 500, 1000);
             new UI.Texture(image, Birb);
-            new UIMouseBind(image, [(UIMouseEvent.MouseOver, new PrintEvent(null))]);
+            
         }
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == Microsoft.Xna.Framework.Input.ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
+            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
             Ecs.Update(gameTime);
