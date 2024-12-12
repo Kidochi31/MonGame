@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 
 namespace MonGame.Input
 {
-    public abstract record class InputEvent(Ecs Ecs) : Event(Ecs);
+    public abstract record class InputEvent(Ecs? Ecs) : Event(Ecs);
 
-    public record class PrintEvent(Ecs Ecs) : InputEvent(Ecs);
+    public record class PrintEvent(Ecs? Ecs) : InputEvent(Ecs);
 
 }

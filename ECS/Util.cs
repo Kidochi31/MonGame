@@ -15,5 +15,10 @@ namespace MonGame.ECS
                 action(item);
             }
         }
+
+        public static T InvokeEvent<T>(this T thisEvent, Ecs ecs) where T : Event
+        {
+            return Event.InvokeEvent(thisEvent, ecs);
+        }
     }
 }

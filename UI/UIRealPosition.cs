@@ -17,11 +17,11 @@ namespace MonGame.UI
                              VirtualPointToRealPoint(realFrame, virtualSize, new Point(virtualFrame.X + virtualFrame.Width, virtualFrame.Y + virtualFrame.Height)));
 
         public static Point VirtualPointToRealPoint(Rectangle realFrame, Point virtualSize, Point virtualPoint)
-            => new Point(virtualPoint.X / virtualSize.X * realFrame.Width + realFrame.X,
-                         virtualPoint.Y / virtualSize.Y * realFrame.Height + realFrame.Y);
+            => new Point((int)((float)virtualPoint.X / (float)virtualSize.X * (float)realFrame.Width + realFrame.X),
+                         (int)((float)virtualPoint.Y / (float)virtualSize.Y * (float)realFrame.Height + realFrame.Y));
 
         public static Point RealPointToVirtualPoint(Rectangle realFrame, Point virtualSize, Point realPoint)
-            => new Point((realPoint.X - realFrame.X) / realFrame.Width * virtualSize.X,
-                         (realPoint.Y - realFrame.Y) / realFrame.Height * virtualSize.Y);
+            => new Point((int)((float)(realPoint.X - realFrame.X) / (float)realFrame.Width * (float)virtualSize.X),
+                         (int)((float)(realPoint.Y - realFrame.Y) / (float)realFrame.Height * (float)virtualSize.Y));
     }
 }

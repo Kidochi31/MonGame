@@ -15,27 +15,25 @@ namespace MonGame.Input
     {
         KeyboardState OldKeyboardState;
         MouseState OldMouseState;
-        readonly List<(ButtonState State, Keys Key, Type? Event)> InitialKeys = new(){
-            (ButtonState.Released, Keys.A, typeof(PrintEvent))
+        readonly List<(ButtonState State, Keys Key, InputEvent? Event)> InitialKeys = new(){
+            (ButtonState.Released, Keys.A, new PrintEvent(null))
         };
         
-        readonly List<Type?> InitialMousePositions = new() {
+        readonly List<InputEvent?> InitialMousePositions = new() {
             //typeof(PrintEvent)
         };
-
-        EventConstructorCache<Func<Ecs, InputEvent>> CachedEventConstructors = new();
 
         internal override void Initialize(Ecs ecs, GameManager game)
         {
             OldKeyboardState = Keyboard.GetState();
             OldMouseState = Mouse.GetState();
-            foreach((ButtonState State, Keys Key, Type? Event) in InitialKeys)
+            foreach((ButtonState State, Keys Key, InputEvent? Event) in InitialKeys)
             {
                 // create a keybind component on a new entity
                 Entity keyEntity = ecs.CreateEntity();
                 new Keybind(keyEntity, State, Key, Event);
             }
-            foreach (Type? Event in InitialMousePositions)
+            foreach (InputEvent? Event in InitialMousePositions)
             {
                 // create a mouse position component on a new entity
                 Entity keyEntity = ecs.CreateEntity();
@@ -50,30 +48,24 @@ namespace MonGame.Input
             // go through all Keybind components
             foreach (Keybind keybind in ecs.GetComponents<Keybind>())
             {
-                Type? type = keybind.Event;
-                if (type is null || !ShouldInvokeKeyEvent(keybind, newKeyboardState))
+                InputEvent? Event = keybind.Event;
+                if (Event is null || !ShouldInvokeKeyEvent(keybind, newKeyboardState))
                     continue;
-                InvokeInputEvent(type, ecs);
+                Event.InvokeEvent(ecs);
             }
 
             bool mouseMoved = OldMouseState.Position != newMouseState.Position;
             // go through all mouse position bind components
             foreach (MouseMovedBind mouseMovedBind in ecs.GetComponents<MouseMovedBind>())
             {
-                Type? type = mouseMovedBind.Event;
-                if (type is null || !mouseMoved)
+                InputEvent? Event = mouseMovedBind.Event;
+                if (Event is null || !mouseMoved)
                     continue;
-
-                InvokeInputEvent(type, ecs);
+                Event.InvokeEvent(ecs);
             }
 
             OldMouseState = newMouseState;
             OldKeyboardState = newKeyboardState;
-        }
-
-        private void InvokeInputEvent(Type type, Ecs ecs)
-        {
-            CachedEventConstructors[type](ecs);
         }
 
         private bool ShouldInvokeKeyEvent(Keybind keybind, KeyboardState newState)
