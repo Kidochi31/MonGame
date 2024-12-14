@@ -8,7 +8,7 @@ namespace MonGame.ECS
 {
     public abstract record class Event
     {
-        Ecs? Ecs { get; init; }
+        public Ecs? Ecs { get; init; }
 
         // null if the event is a template (i.e. to be used by InvokeEvent)
         public Event(Ecs? ecs)

@@ -16,7 +16,7 @@ namespace MonGame.Input
         KeyboardState OldKeyboardState;
         MouseState OldMouseState;
         readonly List<(ButtonState State, Keys Key, InputEvent? Event)> InitialKeys = new(){
-            (ButtonState.Released, Keys.A, new PrintEvent(null))
+            (ButtonState.Released, Keys.A, new TestInputEvent(null))
         };
         
         readonly List<InputEvent?> InitialMousePositions = new() {

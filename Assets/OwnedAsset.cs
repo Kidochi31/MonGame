@@ -14,6 +14,10 @@ namespace MonGame.Assets
             {
                 return OwnedTexture2DAsset.Load(texture2D);
             }
+            if (assetID is AssetID<SoundEffectAsset> soundEffect)
+            {
+                return OwnedSoundEffectAsset.Load(soundEffect);
+            }
             throw new InvalidAssetTypeException(typeof(T));
         }
 

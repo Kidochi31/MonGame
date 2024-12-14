@@ -5,6 +5,7 @@ using MonGame.Assets;
 using MonGame.Drawing;
 using MonGame.ECS;
 using MonGame.Input;
+using MonGame.Sound;
 using MonGame.UI;
 using System;
 using System.Reflection;
@@ -20,6 +21,7 @@ namespace MonGame
 
         public Texture2DAsset Birb;
         public Texture2DAsset Birb2;
+        public SoundEffectAsset SecretSound;
 
         public GameManager()
         {
@@ -42,6 +44,7 @@ namespace MonGame
 
             Birb = Asset.Birb.Load();
             Birb2 = Asset.Birb2.Load();
+            SecretSound = Asset.Secret.Load();
 
             Entity uiParent = Ecs.CreateEntity("parent");
             new UITransform(uiParent, new(0, 0), 0, null);
@@ -56,7 +59,7 @@ namespace MonGame
             new UITransform(birb, new(250, 0), 0.5f, frame.GetComponent<UITransform>());
             new Frame(birb, 500, 1000);
             new UI.Texture(birb, Birb);
-            new UIMouseBind(birb, [(UIMouseEvent.MouseOver, new PrintEvent(null))]);
+            new UIMouseBind(birb, [(UIMouseEvent.LeftMouseClick, new TestInputEvent(null))]);
 
             Entity birb2 = Ecs.CreateEntity("birb2");
             new UITransform(birb2, new(0, 0), 0.7f, frame.GetComponent<UITransform>());
