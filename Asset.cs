@@ -10,5 +10,6 @@ namespace MonGame
     public static class Asset
     {
         public static AssetID<Texture2DAsset> Birb = new("Birb", "birb.jpg");
+        public static AssetID<Texture2DAsset> Birb2 = new("Birb2", "birb2.jpg");
     }
 }

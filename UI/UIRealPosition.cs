@@ -14,7 +14,8 @@ namespace MonGame.UI
 
         public static Rectangle VirtualFrameToRealFrame(Rectangle realFrame, Point virtualSize, Rectangle virtualFrame)
             => new Rectangle(VirtualPointToRealPoint(realFrame, virtualSize, new Point(virtualFrame.X, virtualFrame.Y)),
-                             VirtualPointToRealPoint(realFrame, virtualSize, new Point(virtualFrame.X + virtualFrame.Width, virtualFrame.Y + virtualFrame.Height)));
+                             VirtualPointToRealPoint(realFrame, virtualSize, new Point(virtualFrame.X + virtualFrame.Width, virtualFrame.Y + virtualFrame.Height))
+                             - VirtualPointToRealPoint(realFrame, virtualSize, new Point(virtualFrame.X, virtualFrame.Y)));
 
         public static Point VirtualPointToRealPoint(Rectangle realFrame, Point virtualSize, Point virtualPoint)
             => new Point((int)((float)virtualPoint.X / (float)virtualSize.X * (float)realFrame.Width + realFrame.X),

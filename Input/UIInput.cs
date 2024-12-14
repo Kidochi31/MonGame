@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 namespace MonGame.Input
 {
@@ -27,35 +28,41 @@ namespace MonGame.Input
 
             Rectangle realFrame = UIRealPosition.GetInitialRealFrame(game);
             // go through all Gui components, then recursively find the frames/textures with
-            foreach(Gui gui in ecs.GetComponents<Gui>())
+            IEnumerable<(Frame Frame, UIDepth Depth)> selectedFrames =
+                (from gui in ecs.GetComponents<Gui>()
+                 let virtualSize = new Point(gui.VirtualWidth, gui.VirtualHeight)
+                 let transform = gui.Entity.GetComponent<UITransform>()
+                 select GetFramesWithMouseOver(transform, new(transform.Depth), realFrame, virtualSize, newMouseState.Position)).SelectMany(x => x);
+
+            selectedFrames = from frame in selectedFrames orderby frame.Depth descending select frame;
+            foreach ((Frame frame, _) in selectedFrames)
             {
-                Point virtualSize = new(gui.VirtualWidth, gui.VirtualHeight);
-                UITransform transform = gui.Entity.GetComponent<UITransform>();
-                foreach (Frame frame in GetFramesWithMouseOver(transform, realFrame, virtualSize, newMouseState.Position))
+                //Console.WriteLine(frame.Entity.Name);
+                if (frame.Entity.HasComponent<UIMouseBind>())
                 {
-                    
-                    if (frame.Entity.HasComponent<UIMouseBind>())
+                    UIMouseBind bind = frame.Entity.GetComponent<UIMouseBind>();
+                    foreach ((UIMouseEvent mouseEvent, InputEvent? Event) in bind.Events)
                     {
-                        UIMouseBind bind = frame.Entity.GetComponent<UIMouseBind>();
-                        foreach((UIMouseEvent mouseEvent, InputEvent? Event) in bind.Events)
+                        if (IsCurrentMouseEvent(mouseEvent, newMouseState) && Event is not null)
                         {
-                            if(IsCurrentMouseEvent(mouseEvent, newMouseState) && Event is not null)
-                            {
-                                Event.InvokeEvent(ecs);
-                            }
+                            Event.InvokeEvent(ecs);
                         }
                     }
                 }
+
+                if (frame.Entity.HasComponent<UIMouseBlock>())
+                    break;
+
+                // stop if it reaches a mouse block
             }
 
 
             OldMouseState = newMouseState;
         }
 
-        private IEnumerable<Frame> GetFramesWithMouseOver(UITransform transform, Rectangle realFrame, Point virtualSize, Point realMousePosition)
+        private IEnumerable<(Frame Frame, UIDepth Depth)> GetFramesWithMouseOver(UITransform transform, UIDepth depth, Rectangle realFrame, Point virtualSize, Point realMousePosition)
         {
             // find all children, check if their real frames contain the realMousePosition
-            
             foreach (Component<UITransform> child in transform.Children)
             {
                 UITransform childTransform = child.GetComponent();
@@ -64,13 +71,13 @@ namespace MonGame.Input
                 Frame childFrame = childTransform.Entity.GetComponent<Frame>();
                 Rectangle childVirtualFrame = new Rectangle(childTransform.Position, new Point(childFrame.ActualWidth, childFrame.ActualHeight));
                 Rectangle childRealFrame = UIRealPosition.VirtualFrameToRealFrame(realFrame, virtualSize, childVirtualFrame);
-                //Console.WriteLine($"{child.Entity.Name}:\n Virtual:{childVirtualFrame}\n Real: {childRealFrame}");
+                
                 if (!childRealFrame.Contains(realMousePosition))
                     continue;
 
                 // return the child and all valid grand children
-                yield return childFrame;
-                foreach (Frame grandChildFrame in GetFramesWithMouseOver(childTransform, childRealFrame, new Point(childFrame.VirtualWidth, childFrame.VirtualHeight), realMousePosition))
+                yield return (childFrame, new(depth, childTransform.Depth));
+                foreach (var grandChildFrame in GetFramesWithMouseOver(childTransform, new(depth, childTransform.Depth), childRealFrame, new Point(childFrame.VirtualWidth, childFrame.VirtualHeight), realMousePosition))
                     yield return grandChildFrame;
 
             }

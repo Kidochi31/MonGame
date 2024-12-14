@@ -19,6 +19,7 @@ namespace MonGame
         public Ecs Ecs;
 
         public Texture2DAsset Birb;
+        public Texture2DAsset Birb2;
 
         public GameManager()
         {
@@ -40,21 +41,28 @@ namespace MonGame
             Ecs.Initialize();
 
             Birb = Asset.Birb.Load();
+            Birb2 = Asset.Birb2.Load();
 
             Entity uiParent = Ecs.CreateEntity("parent");
             new UITransform(uiParent, new(0, 0), 0, null);
             new Gui(uiParent, 1000, 1000);
 
             Entity frame = Ecs.CreateEntity("frame");
-            new UITransform(frame, new(0, 0), 0, uiParent.GetComponent<UITransform>());
+            new UITransform(frame, new(0, 0), 0f, uiParent.GetComponent<UITransform>());
             new Frame(frame, 1000, 500, 1000, 1000);
-            new UI.Texture(frame, Birb);
+            
 
-            Entity image = Ecs.CreateEntity("image");
-            new UITransform(image, new(0, 0), 0.5f, frame.GetComponent<UITransform>());
-            new Frame(image, 500, 1000);
-            new UI.Texture(image, Birb);
-            new UIMouseBind(image, [(UIMouseEvent.MouseOver, new PrintEvent(null))]);
+            Entity birb = Ecs.CreateEntity("birb");
+            new UITransform(birb, new(250, 0), 0.5f, frame.GetComponent<UITransform>());
+            new Frame(birb, 500, 1000);
+            new UI.Texture(birb, Birb);
+            new UIMouseBind(birb, [(UIMouseEvent.MouseOver, new PrintEvent(null))]);
+
+            Entity birb2 = Ecs.CreateEntity("birb2");
+            new UITransform(birb2, new(0, 0), 0.7f, frame.GetComponent<UITransform>());
+            new Frame(birb2, 500, 1000);
+            new UI.Texture(birb2, Birb2);
+            new UIMouseBlock(birb2);
         }
 
         protected override void Update(GameTime gameTime)

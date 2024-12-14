@@ -38,7 +38,7 @@ namespace MonGame.UI
                 Frame frame = transform.Entity.GetComponent<Frame>();
                 // Get all the child textures
                 List<DrawLayer> Layers = [];
-                // if this entity also has a texture, then add it to the list
+                // if this entity also has a texture, then add it to the list (at the very back)
                 if (transform.Entity.HasComponent<Texture>())
                 {
                     Texture texture = transform.Entity.GetComponent<Texture>();
@@ -46,7 +46,7 @@ namespace MonGame.UI
                     Texture2D texture2D = texture.Asset.Texture2D;
                     Rectangle textureSource = new Rectangle(0, 0, texture2D.Width, texture2D.Height);
                     Rectangle textureDestination = new Rectangle(0, 0, frame.VirtualWidth, frame.VirtualHeight);
-                    Layers.Add(new(texture2D, textureSource, textureDestination, depth));
+                    Layers.Add(new(texture2D, textureSource, textureDestination, 0));
                 }
                 Layers.AddRange(from child in transform.Children
                              let layer = CreateChildrenLayers(child.GetComponent(), gameTime, ecs, game)
