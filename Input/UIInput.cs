@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Input;
 using MonGame.Drawing;
 using MonGame.ECS;
 using MonGame.UI;
+using MonGame.World2D;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +26,13 @@ namespace MonGame.Input
         public override void Update(GameTime gameTime, Ecs ecs, GameManager game)
         {
             MouseState newMouseState = Mouse.GetState();
+            if (!MouseOnScreen(newMouseState, game))
+            {
+                OldMouseState = newMouseState;
+                return;
+            }
+
+            bool foundBlock = false;
 
             Rectangle realFrame = UIRealPosition.GetInitialRealFrame(game);
             // go through all Gui components, then recursively find the frames/textures with
@@ -37,27 +45,59 @@ namespace MonGame.Input
             selectedFrames = from frame in selectedFrames orderby frame.Depth descending select frame;
             foreach ((UIFrame frame, _) in selectedFrames)
             {
-                //Console.WriteLine(frame.Entity.Name);
-                if (frame.Entity.HasComponent<UIMouseBind>())
-                {
-                    UIMouseBind bind = frame.Entity.GetComponent<UIMouseBind>();
-                    foreach ((UIMouseEvent mouseEvent, InputEvent? Event) in bind.Events)
-                    {
-                        if (IsCurrentMouseEvent(mouseEvent, newMouseState) && Event is not null)
-                        {
-                            Event.InvokeEvent(ecs);
-                        }
-                    }
-                }
+                InvokeMouseBindings(ecs, frame, ref foundBlock, newMouseState);
 
-                if (frame.Entity.HasComponent<UIMouseBlock>())
+                if (foundBlock)
                     break;
-
-                // stop if it reaches a mouse block
             }
 
+            if (foundBlock)
+            {
+                OldMouseState = newMouseState;
+                return;
+            }
+
+            // if it hasn't reached a mouse block, go through all MouseBlock and MouseBind components
+            // need to convert mouse position in screen camera to world position
+            ScreenCamera camera = ecs.GetComponents<ScreenCamera>().First();
+            if (ecs.GetComponents<ScreenCamera>().Count() != 1)
+                throw new Exception("more than one screen camera!");
+
+            Vector2 worldPoint = CameraRendering.ConvertScreenPointToWorldPoint(camera, newMouseState.Position, game.Window.ClientBounds.Width, game.Window.ClientBounds.Height);
+
+            // get all frames with mouse on it
+            IEnumerable<Frame> worldFrames = from frame in ecs.GetComponents<Frame>()
+                                             let transform = frame.Entity.GetComponent<Transform>()
+                                             where new FloatRectangle(transform.Position.X, transform.Position.Y, frame.Width, frame.Height).ContainsPoint(worldPoint)
+                                             orderby transform.Depth descending
+                                             select frame;
+            foreach (Frame frame in worldFrames)
+            {
+                InvokeMouseBindings(ecs, frame, ref foundBlock, newMouseState);
+
+                if (foundBlock)
+                    break;
+            }
 
             OldMouseState = newMouseState;
+        }
+
+        private void InvokeMouseBindings(Ecs ecs, ComponentBase component, ref bool foundBlock, MouseState newMouseState)
+        {
+            if (component.Entity.HasComponent<MouseBind>())
+            {
+                MouseBind bind = component.Entity.GetComponent<MouseBind>();
+                foreach ((UIMouseEvent mouseEvent, InputEvent? Event) in bind.Events)
+                {
+                    if (IsCurrentMouseEvent(mouseEvent, newMouseState) && Event is not null)
+                    {
+                        Event.InvokeEvent(ecs);
+                    }
+                }
+            }
+
+            if (component.Entity.HasComponent<MouseBlock>())
+                foundBlock = true;
         }
 
         private IEnumerable<(UIFrame Frame, UIDepth Depth)> GetFramesWithMouseOver(UITransform transform, UIDepth depth, Rectangle realFrame, Point virtualSize, Point realMousePosition)
@@ -102,6 +142,15 @@ namespace MonGame.Input
                         && OldMouseState.RightButton == Microsoft.Xna.Framework.Input.ButtonState.Pressed;
             }
             return false;
+        }
+
+        private bool MouseOnScreen(MouseState mouse, GameManager game)
+        {
+            if (mouse.Position.X < 0 || mouse.Position.Y < 0)
+                return false;
+            if (mouse.Position.X >= game.Window.ClientBounds.Width || mouse.Position.Y >= game.Window.ClientBounds.Height)
+                return false;
+            return true;
         }
     }
 }

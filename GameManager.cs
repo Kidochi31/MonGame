@@ -50,30 +50,31 @@ namespace MonGame
             SecretSound = Asset.Secret.Load();
 
             Entity uiParent = Ecs.CreateEntity("parent");
-            new UITransform(uiParent, new(0, 0), 0.1f, null);
+            new UITransform(uiParent, new(0, 0), 0.9f, null);
             new Gui(uiParent, 1000, 1000);
 
             Entity frame = Ecs.CreateEntity("frame");
-            new UITransform(frame, new(0, 0), 0.1f, uiParent.GetComponent<UITransform>());
+            new UITransform(frame, new(0, 0), 0.9f, uiParent.GetComponent<UITransform>());
             new UIFrame(frame, 1000, 500, 1000, 1000);
             
 
             Entity birb = Ecs.CreateEntity("birb");
-            new UITransform(birb, new(250, 0), 0.5f, frame.GetComponent<UITransform>());
+            new UITransform(birb, new(250, 0), 0.9f, frame.GetComponent<UITransform>());
             new UIFrame(birb, 500, 1000);
             //new UI.UITexture(birb, Birb);
-            new UIMouseBind(birb, [(UIMouseEvent.LeftMouseClick, new TestInputEvent(null))]);
+            //new MouseBind(birb, [(UIMouseEvent.LeftMouseClick, new TestInputEvent(null))]);
 
             Entity birb2 = Ecs.CreateEntity("birb2");
-            new UITransform(birb2, new(0, 0), 0.7f, frame.GetComponent<UITransform>());
+            new UITransform(birb2, new(0, 0), 0.8f, frame.GetComponent<UITransform>());
             new UIFrame(birb2, 500, 1000);
-            //new UI.UITexture(birb2, Birb2);
-            new UIMouseBlock(birb2);
+            new UI.UITexture(birb2, Birb2);
+            new MouseBlock(birb2);
 
             Entity birb3 = Ecs.CreateEntity("birb3");
             new Transform(birb3, new(0, 0), 0);
             new Frame(birb3, 1, 1);
             new World2D.Texture(birb3, Birb3);
+            new MouseBind(birb3, [(UIMouseEvent.LeftMouseClick, new TestInputEvent(null))]);
 
             Entity camera = Ecs.CreateEntity("camera");
             new Transform(camera, new(0, 0), 0);

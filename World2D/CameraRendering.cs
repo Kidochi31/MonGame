@@ -51,6 +51,15 @@ namespace MonGame.World2D
             return bounds.OverlapsRectangle(frameBounds);
         }
 
+        public static Vector2 ConvertScreenPointToWorldPoint(ScreenCamera screenCamera, Point screenPoint, int screenWidth, int screenHeight)
+        {
+            Camera camera = screenCamera.Entity.GetComponent<Camera>();
+            Transform transform = screenCamera.Entity.GetComponent<Transform>();
+            Point screenPointRelativeToCentre = screenPoint - new Point(screenWidth / 2, screenHeight / 2);
+            Vector2 worldPoint = new Vector2(screenPointRelativeToCentre.X, screenPointRelativeToCentre.Y) / screenCamera.WorldToScreenScale + transform.Position;
+            return worldPoint;
+        }
+
         static Rectangle GetFrameScreenRectangle(Frame frame, FloatRectangle cameraBounds, Point screenSize)
         {
             Transform frameTransform = frame.Entity.GetComponent<Transform>();

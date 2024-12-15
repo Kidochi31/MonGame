@@ -3,6 +3,7 @@ using Microsoft.Xna.Framework.Input;
 using MonGame.Drawing;
 using MonGame.ECS;
 using MonGame.UI;
+using MonGame.World2D;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,15 +40,9 @@ namespace MonGame.Input
         RightMouseClick,
     }
 
-    [RequiresComponent(typeof(UITransform))]
-    [RequiresComponent(typeof(UIFrame))]
-    public sealed record class UIMouseBind(Entity Entity, List<(UIMouseEvent MouseEvent, InputEvent? Event)> Events) : ComponentBase(Entity)
+    public sealed record class MouseBind(Entity Entity, List<(UIMouseEvent MouseEvent, InputEvent? Event)> Events) : ComponentBase(Entity)
     {
         public List<(UIMouseEvent MouseEvent, InputEvent? Event)> Events { get; } = Events;
     }
-
-
-    [RequiresComponent(typeof(UITransform))]
-    [RequiresComponent(typeof(UIFrame))]
-    public sealed record class UIMouseBlock(Entity Entity) : ComponentBase(Entity);
+    public sealed record class MouseBlock(Entity Entity) : ComponentBase(Entity);
 }
