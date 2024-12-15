@@ -125,7 +125,7 @@ namespace MonGame.Assets
             var channels = vorbis.Channels == 2 ? AudioChannels.Stereo : AudioChannels.Mono;
 
             // Put it all together!
-            return new SoundEffect(bytes, vorbis.SampleRate, channels); ;
+            return new SoundEffect(bytes, vorbis.SampleRate, channels);
         }
     }
 }

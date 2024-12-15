@@ -40,7 +40,7 @@ namespace MonGame.Input
     }
 
     [RequiresComponent(typeof(UITransform))]
-    [RequiresComponent(typeof(Frame))]
+    [RequiresComponent(typeof(UIFrame))]
     public sealed record class UIMouseBind(Entity Entity, List<(UIMouseEvent MouseEvent, InputEvent? Event)> Events) : ComponentBase(Entity)
     {
         public List<(UIMouseEvent MouseEvent, InputEvent? Event)> Events { get; } = Events;
@@ -48,6 +48,6 @@ namespace MonGame.Input
 
 
     [RequiresComponent(typeof(UITransform))]
-    [RequiresComponent(typeof(Frame))]
+    [RequiresComponent(typeof(UIFrame))]
     public sealed record class UIMouseBlock(Entity Entity) : ComponentBase(Entity);
 }

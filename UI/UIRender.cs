@@ -33,15 +33,15 @@ namespace MonGame.UI
             Point position = transform.Position;
             float depth = transform.Depth;
             // check if it has a frame or Gui
-            if (transform.Entity.HasComponent<Frame>())
+            if (transform.Entity.HasComponent<UIFrame>())
             {
-                Frame frame = transform.Entity.GetComponent<Frame>();
+                UIFrame frame = transform.Entity.GetComponent<UIFrame>();
                 // Get all the child textures
                 List<DrawLayer> Layers = [];
                 // if this entity also has a texture, then add it to the list (at the very back)
-                if (transform.Entity.HasComponent<Texture>())
+                if (transform.Entity.HasComponent<UITexture>())
                 {
-                    Texture texture = transform.Entity.GetComponent<Texture>();
+                    UITexture texture = transform.Entity.GetComponent<UITexture>();
                     // Add the texture to the list
                     Texture2D texture2D = texture.Asset.Texture2D;
                     Rectangle textureSource = new Rectangle(0, 0, texture2D.Width, texture2D.Height);

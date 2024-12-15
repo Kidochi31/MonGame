@@ -28,14 +28,14 @@ namespace MonGame.Input
 
             Rectangle realFrame = UIRealPosition.GetInitialRealFrame(game);
             // go through all Gui components, then recursively find the frames/textures with
-            IEnumerable<(Frame Frame, UIDepth Depth)> selectedFrames =
+            IEnumerable<(UIFrame Frame, UIDepth Depth)> selectedFrames =
                 (from gui in ecs.GetComponents<Gui>()
                  let virtualSize = new Point(gui.VirtualWidth, gui.VirtualHeight)
                  let transform = gui.Entity.GetComponent<UITransform>()
                  select GetFramesWithMouseOver(transform, new(transform.Depth), realFrame, virtualSize, newMouseState.Position)).SelectMany(x => x);
 
             selectedFrames = from frame in selectedFrames orderby frame.Depth descending select frame;
-            foreach ((Frame frame, _) in selectedFrames)
+            foreach ((UIFrame frame, _) in selectedFrames)
             {
                 //Console.WriteLine(frame.Entity.Name);
                 if (frame.Entity.HasComponent<UIMouseBind>())
@@ -60,15 +60,15 @@ namespace MonGame.Input
             OldMouseState = newMouseState;
         }
 
-        private IEnumerable<(Frame Frame, UIDepth Depth)> GetFramesWithMouseOver(UITransform transform, UIDepth depth, Rectangle realFrame, Point virtualSize, Point realMousePosition)
+        private IEnumerable<(UIFrame Frame, UIDepth Depth)> GetFramesWithMouseOver(UITransform transform, UIDepth depth, Rectangle realFrame, Point virtualSize, Point realMousePosition)
         {
             // find all children, check if their real frames contain the realMousePosition
             foreach (Component<UITransform> child in transform.Children)
             {
                 UITransform childTransform = child.GetComponent();
-                if (!childTransform.Entity.HasComponent<Frame>())
+                if (!childTransform.Entity.HasComponent<UIFrame>())
                     continue;
-                Frame childFrame = childTransform.Entity.GetComponent<Frame>();
+                UIFrame childFrame = childTransform.Entity.GetComponent<UIFrame>();
                 Rectangle childVirtualFrame = new Rectangle(childTransform.Position, new Point(childFrame.ActualWidth, childFrame.ActualHeight));
                 Rectangle childRealFrame = UIRealPosition.VirtualFrameToRealFrame(realFrame, virtualSize, childVirtualFrame);
                 

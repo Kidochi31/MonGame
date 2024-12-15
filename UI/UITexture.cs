@@ -10,8 +10,8 @@ using System.Threading.Tasks;
 namespace MonGame.UI
 {
     [RequiresComponent(typeof(UITransform))]
-    [RequiresComponent(typeof(Frame))]
-    public sealed record class Texture(Entity Entity, Texture2DAsset Asset) : ComponentBase(Entity)
+    [RequiresComponent(typeof(UIFrame))]
+    public sealed record class UITexture(Entity Entity, Texture2DAsset Asset) : ComponentBase(Entity)
     {
         public Texture2DAsset Asset { get; set; } = Asset;
     }

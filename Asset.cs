@@ -12,5 +12,6 @@ namespace MonGame
         public static AssetID<Texture2DAsset> Birb = new("Birb", "birb.jpg");
         public static AssetID<Texture2DAsset> Birb2 = new("Birb2", "birb2.jpg");
         public static AssetID<SoundEffectAsset> Secret = new("Secret", "secret.ogg");
+        public static AssetID<Texture2DAsset> Birb3 = new("Birb3", "birb3.png");
     }
 }

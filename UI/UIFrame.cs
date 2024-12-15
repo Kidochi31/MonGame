@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 namespace MonGame.UI
 {
     [RequiresComponent(typeof(UITransform))]
-    public sealed record class Frame(Entity Entity, int ActualWidth, int ActualHeight, int VirtualWidth = 1000, int VirtualHeight = 1000) : ComponentBase(Entity)
+    public sealed record class UIFrame(Entity Entity, int ActualWidth, int ActualHeight, int VirtualWidth = 1000, int VirtualHeight = 1000) : ComponentBase(Entity)
     {
         public int ActualWidth { get; set; } = ActualWidth;
         public int ActualHeight { get; set; } = ActualHeight;

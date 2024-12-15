@@ -7,6 +7,7 @@ using MonGame.ECS;
 using MonGame.Input;
 using MonGame.Sound;
 using MonGame.UI;
+using MonGame.World2D;
 using System;
 using System.Reflection;
 using System.Runtime.Serialization;
@@ -21,6 +22,7 @@ namespace MonGame
 
         public Texture2DAsset Birb;
         public Texture2DAsset Birb2;
+        public Texture2DAsset Birb3;
         public SoundEffectAsset SecretSound;
 
         public GameManager()
@@ -44,28 +46,39 @@ namespace MonGame
 
             Birb = Asset.Birb.Load();
             Birb2 = Asset.Birb2.Load();
+            Birb3 = Asset.Birb3.Load();
             SecretSound = Asset.Secret.Load();
 
             Entity uiParent = Ecs.CreateEntity("parent");
-            new UITransform(uiParent, new(0, 0), 0, null);
+            new UITransform(uiParent, new(0, 0), 0.1f, null);
             new Gui(uiParent, 1000, 1000);
 
             Entity frame = Ecs.CreateEntity("frame");
-            new UITransform(frame, new(0, 0), 0f, uiParent.GetComponent<UITransform>());
-            new Frame(frame, 1000, 500, 1000, 1000);
+            new UITransform(frame, new(0, 0), 0.1f, uiParent.GetComponent<UITransform>());
+            new UIFrame(frame, 1000, 500, 1000, 1000);
             
 
             Entity birb = Ecs.CreateEntity("birb");
             new UITransform(birb, new(250, 0), 0.5f, frame.GetComponent<UITransform>());
-            new Frame(birb, 500, 1000);
-            new UI.Texture(birb, Birb);
+            new UIFrame(birb, 500, 1000);
+            //new UI.UITexture(birb, Birb);
             new UIMouseBind(birb, [(UIMouseEvent.LeftMouseClick, new TestInputEvent(null))]);
 
             Entity birb2 = Ecs.CreateEntity("birb2");
             new UITransform(birb2, new(0, 0), 0.7f, frame.GetComponent<UITransform>());
-            new Frame(birb2, 500, 1000);
-            new UI.Texture(birb2, Birb2);
+            new UIFrame(birb2, 500, 1000);
+            //new UI.UITexture(birb2, Birb2);
             new UIMouseBlock(birb2);
+
+            Entity birb3 = Ecs.CreateEntity("birb3");
+            new Transform(birb3, new(0, 0), 0);
+            new Frame(birb3, 1, 1);
+            new World2D.Texture(birb3, Birb3);
+
+            Entity camera = Ecs.CreateEntity("camera");
+            new Transform(camera, new(0, 0), 0);
+            new Camera(camera, 4, 4);
+            new ScreenCamera(camera, 200);
         }
 
         protected override void Update(GameTime gameTime)
