@@ -1,6 +1,8 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using MonGame.Assets;
 using MonGame.ECS;
+using MonGame.UI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,10 +24,8 @@ namespace MonGame.World2D
             FloatRectangle cameraBounds = new FloatRectangle(cameraTransform.Position.X, cameraTransform.Position.Y, camera.Width, camera.Height);
 
             // find all textures where the frame is in the camera
-            var validTextures = from texture in ecs.GetComponents<Texture>()
-                                let frame = texture.Entity.GetComponent<Frame>()
-                                where FrameInBounds(frame, cameraBounds)
-                                select texture;
+            var validTextures = GetTextures(cameraBounds, ecs, camera)
+                        .Concat(GetTexturesInMaps(cameraBounds, ecs, camera));
 
             // now need to draw textures to the camera's render target
             RenderTarget2D renderTarget = camera.RenderTarget;
@@ -33,15 +33,54 @@ namespace MonGame.World2D
             ecs.GameManager.GraphicsDevice.Clear(Color.Transparent);
             SpriteBatch sb = ecs.GameManager.SpriteBatch;
             sb.Begin(SpriteSortMode.FrontToBack, BlendState.AlphaBlend, SamplerState.PointWrap);
-            foreach (Texture texture in validTextures)
-            {
-                float textureDepth = texture.Entity.GetComponent<Transform>().Depth;
-                Texture2D texture2D = texture.Asset.Texture2D;
-                Rectangle textureSource = new Rectangle(0, 0, texture2D.Width, texture2D.Width);
-                Rectangle textureDestination = GetFrameScreenRectangle(texture.Entity.GetComponent<Frame>(), cameraBounds, new(camera.VirtualWidth, camera.VirtualHeight));
-                sb.Draw(texture2D, textureDestination, textureSource, Color.White, 0, Vector2.Zero, SpriteEffects.None, textureDepth);
-            }
+            validTextures.ForEach(layer => layer.Draw(sb));
             sb.End();
+        }
+
+        static IEnumerable<DrawLayer> GetTextures(FloatRectangle cameraBounds, Ecs ecs, Camera camera)
+        {
+            // find all textures where the frame is in the camera
+           return from texture in ecs.GetComponents<Texture>()
+                  let frame = texture.Entity.GetComponent<Frame>()
+                  where FrameInBounds(frame, cameraBounds)
+                  let textureDepth = texture.Entity.GetComponent<Transform>().Depth
+                  let texture2D = texture.Asset.Texture2D
+                  let textureSource = new Rectangle(0, 0, texture2D.Width, texture2D.Height)
+                  let textureDestination = GetFrameScreenRectangle(GetFrameBounds(texture.Entity.GetComponent<Frame>()), cameraBounds, new(camera.VirtualWidth, camera.VirtualHeight))
+                  select new DrawLayer(texture2D, textureSource, textureDestination, textureDepth);
+        }
+
+        static IEnumerable<DrawLayer> GetTexturesInMaps(FloatRectangle cameraBounds, Ecs ecs, Camera camera)
+        {
+            var maps = ecs.GetComponents<TextureMap>();
+            foreach(var map in maps)
+            {
+
+                Frame frame = map.Entity.GetComponent<Frame>();
+                if (!FrameInBounds(frame, cameraBounds))
+                    continue;
+                var textureDepth = map.Entity.GetComponent<Transform>().Depth;
+                var mapBounds = GetFrameBounds(frame);
+
+                // go through all x and y cells
+                for (int x = 0; x < map.XCells; x++)
+                {
+                    for (int y = 0; y < map.YCells; y++)
+                    {
+                        var bounds = GetTextureMapCellBounds(map, mapBounds, x, y);
+                        if (cameraBounds.OverlapsRectangle(bounds))
+                        {
+                            var texture2D = map.Textures[x, y]?.Texture2D;
+                            if (texture2D is null)
+                                continue;
+                            var textureSource = new Rectangle(0, 0, texture2D.Width, texture2D.Height);
+                            var textureDestination = GetFrameScreenRectangle(bounds, cameraBounds, new(camera.VirtualWidth, camera.VirtualHeight));
+                            yield return new DrawLayer(texture2D, textureSource, textureDestination, textureDepth);
+                        }
+                    }
+                }
+            }
+            yield break;
         }
 
         static bool FrameInBounds(Frame frame, FloatRectangle bounds)
@@ -60,16 +99,28 @@ namespace MonGame.World2D
             return worldPoint;
         }
 
-        static Rectangle GetFrameScreenRectangle(Frame frame, FloatRectangle cameraBounds, Point screenSize)
+        static Rectangle GetFrameScreenRectangle(FloatRectangle frame, FloatRectangle cameraBounds, Point screenSize)
         {
-            Transform frameTransform = frame.Entity.GetComponent<Transform>();
-            FloatRectangle frameBounds = new FloatRectangle(frameTransform.Position.X, frameTransform.Position.Y, frame.Width, frame.Height);
-
-            Vector2 topLeft = frameBounds.TopLeft;
-            Vector2 bottomRight = frameBounds.BottomRight;
+            Vector2 topLeft = frame.TopLeft;
+            Vector2 bottomRight = frame.BottomRight;
 
             return new Rectangle(GetPositionScreenPoint(topLeft, cameraBounds, screenSize),
                                  GetPositionScreenPoint(bottomRight, cameraBounds, screenSize) - GetPositionScreenPoint(topLeft, cameraBounds, screenSize));
+        }
+
+        static FloatRectangle GetFrameBounds(Frame frame)
+        {
+            Transform frameTransform = frame.Entity.GetComponent<Transform>();
+            FloatRectangle frameBounds = new FloatRectangle(frameTransform.Position.X, frameTransform.Position.Y, frame.Width, frame.Height);
+            return frameBounds;
+        }
+
+        static FloatRectangle GetTextureMapCellBounds(TextureMap map, FloatRectangle bounds, int xCell, int yCell)
+        {
+            Vector2 cellSize = new Vector2(bounds.Width / map.XCells, bounds.Height / map.YCells);
+            Vector2 cellStart = new Vector2(cellSize.X * xCell, cellSize.Y * yCell) + bounds.TopLeft;
+            Vector2 cellEnd = cellStart + cellSize;
+            return new FloatRectangle(cellStart, cellEnd);
         }
 
         static Point GetPositionScreenPoint(Vector2 point, FloatRectangle cameraBounds, Point screenSize)

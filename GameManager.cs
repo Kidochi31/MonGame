@@ -23,6 +23,7 @@ namespace MonGame
         public Texture2DAsset Birb;
         public Texture2DAsset Birb2;
         public Texture2DAsset Birb3;
+        public Texture2DAsset Birb4;
         public SoundEffectAsset SecretSound;
 
         public GameManager()
@@ -47,6 +48,7 @@ namespace MonGame
             Birb = Asset.Birb.Load();
             Birb2 = Asset.Birb2.Load();
             Birb3 = Asset.Birb3.Load();
+            Birb4 = Asset.Birb4.Load();
             SecretSound = Asset.Secret.Load();
 
             Entity uiParent = Ecs.CreateEntity("parent");
@@ -71,10 +73,18 @@ namespace MonGame
             new MouseBlock(birb2);
 
             Entity birb3 = Ecs.CreateEntity("birb3");
-            new Transform(birb3, new(0, 0), 0);
+            new Transform(birb3, new(1, 0), 0.1f);
             new Frame(birb3, 1, 1);
             new World2D.Texture(birb3, Birb3);
             new MouseBind(birb3, [(UIMouseEvent.LeftMouseClick, new TestInputEvent(null))]);
+
+            Entity birb4 = Ecs.CreateEntity("birb4");
+            new Transform(birb4, new(0, 0), 0);
+            new Frame(birb4, 8, 8);
+            TextureMap map = new TextureMap(16, 16, birb4);
+            for(int x = 0; x < 16; x++)
+                for (int y = 0; y < 16; y++)
+                    map.Textures[x, y] = Birb4;
 
             Entity camera = Ecs.CreateEntity("camera");
             new Transform(camera, new(0, 0), 0);
