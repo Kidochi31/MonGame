@@ -16,14 +16,19 @@ namespace MonGame.Input
         KeyboardState OldKeyboardState;
         MouseState OldMouseState;
         readonly List<(ButtonState State, Keys Key, InputEvent? Event)> InitialKeys = new(){
-            (ButtonState.Released, Keys.A, new TestInputEvent(null))
+            (ButtonState.Released, Keys.Q, new TestInputEvent(null)),
+            (ButtonState.HeldDown, Keys.W, new MoveUpEvent(null)),
+            (ButtonState.HeldDown, Keys.A, new MoveLeftEvent(null)),
+            (ButtonState.HeldDown, Keys.S, new MoveDownEvent(null)),
+            (ButtonState.HeldDown, Keys.D, new MoveRightEvent(null)),
+            (ButtonState.HeldDown, Keys.Escape, new PauseEvent(null)),
         };
         
         readonly List<InputEvent?> InitialMousePositions = new() {
             //typeof(PrintEvent)
         };
 
-        internal override void Initialize(Ecs ecs, GameManager game)
+        public override void Initialize(Ecs ecs, GameManager game)
         {
             OldKeyboardState = Keyboard.GetState();
             OldMouseState = Mouse.GetState();

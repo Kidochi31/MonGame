@@ -18,7 +18,7 @@ namespace MonGame.Input
     {
         MouseState OldMouseState;
 
-        internal override void Initialize(Ecs ecs, GameManager game)
+        public override void Initialize(Ecs ecs, GameManager game)
         {
             OldMouseState = Mouse.GetState();
         }
@@ -35,11 +35,17 @@ namespace MonGame.Input
             bool foundBlock = false;
 
             Rectangle realFrame = UIRealPosition.GetInitialRealFrame(game);
-            // go through all Gui components, then recursively find the frames/textures with
+
+            // set all mouse sensitivities to false
+            ecs.GetComponents<MouseOverSensitivity>().ForEach(x => x.HasMouseOver = false);
+
+            // go through all Gui components, then recursively find the frames/textures with the mouse
+            // only use active frames
             IEnumerable<(UIFrame Frame, UIDepth Depth)> selectedFrames =
                 (from gui in ecs.GetComponents<Gui>()
                  let virtualSize = new Point(gui.VirtualWidth, gui.VirtualHeight)
                  let transform = gui.Entity.GetComponent<UITransform>()
+                 where transform.Active
                  select GetFramesWithMouseOver(transform, new(transform.Depth), realFrame, virtualSize, newMouseState.Position)).SelectMany(x => x);
 
             selectedFrames = from frame in selectedFrames orderby frame.Depth descending select frame;
@@ -95,6 +101,11 @@ namespace MonGame.Input
                     }
                 }
             }
+            if (component.Entity.HasComponent<MouseOverSensitivity>())
+            {
+                MouseOverSensitivity mouseOver = component.Entity.GetComponent<MouseOverSensitivity>();
+                mouseOver.HasMouseOver = true;
+            }
 
             if (component.Entity.HasComponent<MouseBlock>())
                 foundBlock = true;
@@ -106,7 +117,8 @@ namespace MonGame.Input
             foreach (Component<UITransform> child in transform.Children)
             {
                 UITransform childTransform = child.GetComponent();
-                if (!childTransform.Entity.HasComponent<UIFrame>())
+                // must hhave a frame and be active
+                if (!childTransform.Entity.HasComponent<UIFrame>() || !childTransform.Active)
                     continue;
                 UIFrame childFrame = childTransform.Entity.GetComponent<UIFrame>();
                 Rectangle childVirtualFrame = new Rectangle(childTransform.Position, new Point(childFrame.ActualWidth, childFrame.ActualHeight));

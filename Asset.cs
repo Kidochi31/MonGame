@@ -14,5 +14,8 @@ namespace MonGame
         public static AssetID<SoundEffectAsset> Secret = new("Secret", "secret.ogg");
         public static AssetID<Texture2DAsset> Birb3 = new("Birb3", "birb3.png");
         public static AssetID<Texture2DAsset> Birb4 = new("Birb4", "birb4.png");
+        public static AssetID<Texture2DAsset> ContinueButton = new("Continue", "continue.jpg");
+        public static AssetID<Texture2DAsset> QuitButton = new("Quit", "quit.jpg");
+        public static AssetID<Texture2DAsset> MenuGreyBackground = new("MenuGreyBackground", "menu_background.png");
     }
 }

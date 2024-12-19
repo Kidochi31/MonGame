@@ -2,6 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using MonGame.Drawing;
 using MonGame.ECS;
+using MonGame.World2D;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,12 +31,23 @@ namespace MonGame.UI
 
         DrawLayer? CreateChildrenLayers(UITransform transform, GameTime gameTime, Ecs ecs, GameManager game)
         {
+            //only draw active layers
+            if (!transform.Active)
+                return null;
+
             Point position = transform.Position;
             float depth = transform.Depth;
+            // add color if necessary
+            ColorF? color = null;
+            if (transform.Entity.HasComponent<UIColor>())
+                color = transform.Entity.GetComponent<UIColor>().Color;
+
             // check if it has a frame or Gui
             if (transform.Entity.HasComponent<UIFrame>())
             {
                 UIFrame frame = transform.Entity.GetComponent<UIFrame>();
+                
+                
                 // Get all the child textures
                 List<DrawLayer> Layers = [];
                 // if this entity also has a texture, then add it to the list (at the very back)
@@ -63,7 +75,8 @@ namespace MonGame.UI
 
                 Rectangle source = new Rectangle(0, 0, frame.VirtualWidth, frame.VirtualHeight);
                 Rectangle destination = new Rectangle(position.X, position.Y, frame.ActualWidth, frame.ActualHeight);
-                return new(renderTarget, source, destination, depth);
+
+                return new(renderTarget, source, destination, depth, color);
             }
             else if (transform.Entity.HasComponent<Gui>())
             {
@@ -83,7 +96,8 @@ namespace MonGame.UI
 
                 Rectangle source = new Rectangle(0, 0, gui.VirtualWidth, gui.VirtualHeight);
                 Rectangle destination = new Rectangle(position.X, position.Y, game.Window.ClientBounds.Width, game.Window.ClientBounds.Height);
-                return new(renderTarget, source, destination, depth);
+
+                return new(renderTarget, source, destination, depth, color);
             }
             // otherwise return null
             return null;

@@ -10,8 +10,9 @@ using System.Xml.Serialization;
 
 namespace MonGame.Drawing
 {
-    public sealed record class UITransform(Entity Entity, Point Position, float Depth, Component<UITransform>? Parent, List<Component<UITransform>>? Children = null) : ComponentBase(Entity)
+    public sealed record class UITransform(Entity Entity, Point Position, float Depth, Component<UITransform>? Parent, List<Component<UITransform>>? Children = null, bool Active = true) : ComponentBase(Entity)
     {
+        public bool Active { get; set; } = Active;
         public Point Position { get; set; } = Position;
         public float Depth { get; set; } = Depth;
         public Component<UITransform>? Parent { get; private set;} = Parent;

@@ -44,5 +44,11 @@ namespace MonGame.Input
     {
         public List<(UIMouseEvent MouseEvent, InputEvent? Event)> Events { get; } = Events;
     }
+
+    public sealed record class MouseOverSensitivity(Entity Entity) : ComponentBase(Entity)
+    {
+        public bool HasMouseOver = false;
+    }
+
     public sealed record class MouseBlock(Entity Entity) : ComponentBase(Entity);
 }

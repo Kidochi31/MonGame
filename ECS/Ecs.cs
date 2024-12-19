@@ -174,7 +174,7 @@ namespace MonGame.ECS
         public T? GetProcessor<T>() where T : Processor
             => (T?)GetProcessor(typeof(T));
 
-        public void Initialize()
+        public void InitializeProcessors()
         {
             RunProcessors(UpdateProcessors, p => p.Initialize(this, GameManager), "initialising process");
             RunProcessors(DrawProcessors, p => p.Initialize(this, GameManager), "initialising process");
@@ -182,8 +182,7 @@ namespace MonGame.ECS
 
         public void Update(GameTime gameTime)
         {
-            RunProcessors(UpdateProcessors, p => p.Update(gameTime, this, GameManager), "update process");
-            ExecuteEvents();
+            RunProcessors(UpdateProcessors, p => { p.Update(gameTime, this, GameManager); ExecuteEvents(); }, "update process");
         }
 
         public void DrawUpdate(GameTime gameTime)

@@ -5,6 +5,7 @@ using MonGame.Assets;
 using MonGame.Drawing;
 using MonGame.ECS;
 using MonGame.Input;
+using MonGame.Movement;
 using MonGame.Sound;
 using MonGame.UI;
 using MonGame.World2D;
@@ -20,10 +21,13 @@ namespace MonGame
         public SpriteBatch SpriteBatch;
         public Ecs Ecs;
 
-        public Texture2DAsset Birb;
-        public Texture2DAsset Birb2;
-        public Texture2DAsset Birb3;
-        public Texture2DAsset Birb4;
+        public Gui Gui; 
+
+
+        Texture2DAsset Birb;
+        Texture2DAsset Birb2;
+        Texture2DAsset Birb3;
+        Texture2DAsset Birb4;
         public SoundEffectAsset SecretSound;
 
         public GameManager()
@@ -43,7 +47,7 @@ namespace MonGame
             AssetManager.Initialise(GraphicsDevice);
             SpriteBatch = new SpriteBatch(GraphicsDevice);
 
-            Ecs.Initialize();
+            
 
             Birb = Asset.Birb.Load();
             Birb2 = Asset.Birb2.Load();
@@ -51,14 +55,19 @@ namespace MonGame
             Birb4 = Asset.Birb4.Load();
             SecretSound = Asset.Secret.Load();
 
-            Entity uiParent = Ecs.CreateEntity("parent");
+            Entity uiParent = Ecs.CreateEntity("Gui Parent");
             new UITransform(uiParent, new(0, 0), 0.9f, null);
-            new Gui(uiParent, 1000, 1000);
+            Gui = new Gui(uiParent, 1000, 1000);
+
+            Ecs.InitializeProcessors();
+
 
             Entity frame = Ecs.CreateEntity("frame");
             new UITransform(frame, new(0, 0), 0.9f, uiParent.GetComponent<UITransform>());
             new UIFrame(frame, 1000, 500, 1000, 1000);
+
             
+
 
             Entity birb = Ecs.CreateEntity("birb");
             new UITransform(birb, new(250, 0), 0.9f, frame.GetComponent<UITransform>());
@@ -77,6 +86,8 @@ namespace MonGame
             new Frame(birb3, 1, 1);
             new World2D.Texture(birb3, Birb3);
             new MouseBind(birb3, [(UIMouseEvent.LeftMouseClick, new TestInputEvent(null))]);
+            new Player(birb3);
+            new MoveWithPlayer(birb3, 0.1f);
 
             Entity birb4 = Ecs.CreateEntity("birb4");
             new Transform(birb4, new(0, 0), 0);
@@ -94,9 +105,6 @@ namespace MonGame
 
         protected override void Update(GameTime gameTime)
         {
-            if (GamePad.GetState(PlayerIndex.One).Buttons.Back == Microsoft.Xna.Framework.Input.ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
-                Exit();
-
             Ecs.Update(gameTime);
 
         }

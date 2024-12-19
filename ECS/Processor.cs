@@ -35,7 +35,7 @@ namespace MonGame.ECS
             }
         }
 
-        internal virtual void Initialize(Ecs ecs, GameManager game) { }
+        public virtual void Initialize(Ecs ecs, GameManager game) { }
         protected virtual void OnActivate() { }
         protected virtual void OnDeactivate() { }
 
